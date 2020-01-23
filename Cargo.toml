@@ -1,0 +1,16 @@
+[package]
+name = "jira"
+version = "0.1.0"
+authors = ["piqueras <ignacio.piqueras@silicon-gears.com>"]
+edition = "2018"
+description = "Creates a LaTeX encoded table out of a JSON specification"
+license = "GPL-3.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+clap = "2.33"
+env_logger = "0.7"
+log = "0.4"
