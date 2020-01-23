@@ -1,22 +1,32 @@
 use serde::{Deserialize};
-use serde_json::{self, Result, Value};
+use serde_json::{self, Value};
+extern crate thiserror;
+use thiserror::Error;
 
-#[derive(Deserialize, Debug)]
-pub struct Row {
-    pub cells: Vec<String>,
+/// A type to represent the output of validate_input
+type ValidationResult = std::result::Result<u32, ValidationError>;
+
+#[derive(Error, Debug)]
+/// Custom error to represent all possible errors that might arise parsing user input
+pub enum ValidationError {
+    #[error("Parse error on user input")]
+    Parse(#[from] serde_json::Error),
+    #[error("JSON input does not look like a table")]
+    Invalid
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Table {
-    pub rows: Vec<Row>,
-}
+pub fn create_from_string(data: &str) -> ValidationResult {
 
-impl Table {
-
-    pub fn new(data: &str) -> Result<Table> {
-        let table = serde_json::from_str(data);
-        table
+    let parsed: Value = serde_json::from_str(&test_table)?;
+    match parsed {
+        Value::Array(value) => {
+            assert_eq!(value.len(), 3);
+        },
+        _ => {
+            return Err(ValidationError::Invalid)
+        },
     }
+    Ok((1))
 }
 
 #[cfg(test)]
@@ -31,8 +41,6 @@ mod tests {
   ["1,0", "1,1", "1,2"],
   ["2,0", "2,1", "2,2"]
 ]"#;
-        // let table = Table::new(&test_table).unwrap();
-        // assert_eq!(table.rows.len(), 3);
         let parsed: Value = serde_json::from_str(&test_table).unwrap();
         match parsed {
             Value::Array(value) => {
@@ -43,15 +51,14 @@ mod tests {
     }
 
     #[test]
-    fn from_json_string_to_table() {
+    fn json_parse_error() {
         let test_table = r#"
-[
-  ["0,1", "0,2", "0,3"],
-  ["1,1", "1,2", "1,3"]
-]
-"#;
-        let table: Table = Table::new(&test_table).unwrap();
-        assert_eq!(table.rows.len(), 2);
+-> Not a valid json
+  ["0,0", "0,1", "0,2"],
+  ["1,0", "1,1", "1,2"],
+  ["2,0", "2,1", "2,2"]
+]"#;
+
     }
 }
 
