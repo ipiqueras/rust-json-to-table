@@ -1,9 +1,9 @@
 [package]
-name = "jira"
+name = "json_to_table"
 version = "0.1.0"
 authors = ["piqueras <ignacio.piqueras@silicon-gears.com>"]
 edition = "2018"
-description = "Creates a LaTeX encoded table out of a JSON specification"
+description = "Creates an ASCII table out of a JSON specification"
 license = "GPL-3.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,6 +18,6 @@ thiserror = "1.0"
 prettytable-rs = "0.8"
 
 [dev-dependencies]
-assert_cmd = "0.10"
+assert_cmd = "0.11"
 predicates = "1"
 tempfile = "3"

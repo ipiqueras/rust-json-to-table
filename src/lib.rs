@@ -1,3 +1,6 @@
+//! # JSON 2 table
+//!
+//! Library interface for **json_to_table** cli.
 use serde::{Deserialize};
 use serde_json::{self};
 extern crate thiserror;
@@ -6,9 +9,6 @@ use thiserror::Error;
 use prettytable::Table as pTable;
 use prettytable::Row as pRow;
 use prettytable::Cell;
-
-/// A type to represent the output of validate_input
-type ValidationResult = std::result::Result<(), ValidationError>;
 
 #[derive(Error, Debug)]
 /// Custom error to represent all possible errors that might arise parsing user input
@@ -27,26 +27,29 @@ pub struct Row { pub cells: Vec<String>, }
 #[serde(transparent)]
 pub struct Table { pub rows: Vec<Row>, }
 
-impl Table {
+fn create_table(data: &str) -> std::result::Result<pTable, ValidationError> {
 
-    fn new_from_json(data: &str) -> std::result::Result<Table, ValidationError> {
-        let table = serde_json::from_str(data)?;
-        Ok(table)
-    }
-}
-
-///
-pub fn run(data: &str) -> ValidationResult {
-
-    let table = Table::new_from_json(data)?;
+    let table: Table = serde_json::from_str(data)?;
     let mut pretty_table = pTable::new();
     for row_item in &table.rows {
-        let mut cells: Vec<Cell> = row_item.cells.iter()
+        let cells: Vec<Cell> = row_item.cells.iter()
             .map(|x| Cell::new(x) )
             .collect();
         pretty_table.add_row(pRow::new(cells));
     }
-    pretty_table.printstd();
+    Ok(pretty_table)
+}
+
+/// Main application interface. Gets a string slice and tries to parse it as
+/// JSON data.
+///
+/// Creates the pretty Table and prints to stdout
+pub fn print_table(data: &str) -> std::result::Result<(), ValidationError> {
+
+    let table = create_table(data)?;
+    // let format = format::FormatBuilder::new().column_separator('&').right_border('\\').padding(1, 1).build();
+    // pretty_table.set_format(format);
+    table.printstd();
     Ok(())
 }
 
@@ -62,7 +65,7 @@ mod tests {
   ["1,0", "1,1", "1,2"],
   ["2,0", "2,1", "2,2"]
 ]"#;
-        let result = run(&test_table);
+        let result = print_table(&test_table);
         assert!(result.is_err());
     }
 
@@ -74,7 +77,10 @@ mod tests {
   ["1,0", "1,1", "1,2"],
   ["2,0", "2,1", "2,2"]
 ]"#;
-        let result = run(&test_table);
-        assert!(result.is_ok());
+        let result = create_table(&test_table);
+        match result {
+            Ok(value) => assert_eq!(value.len(), 3),
+            Err(_) => panic!("Should have created a table"),
+        }
     }
 }
